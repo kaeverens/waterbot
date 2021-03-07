@@ -83,44 +83,46 @@ void readCommand() {
   }
 }
 
+void motorDelay(char dir, int msOn, int msOff) {
+  msOn=20;
+  msOff=20;
+  motor(dir);
+  delay(msOn);
+  motor('O');
+  delay(msOff);
+}
+
 void waterPot(int pot, float ml) {
   for (int i=0;i<pot;++i) {
     moveToNextPot();
   }
-  motorA('L');
-  delay(100);
-  motorA('O');
+  motorDelay('L', 100, 0);
   syringe(ml*-1);
   state=0; // go back to base
 }
 
 void moveToNextPot() {
   int val=1;  
-  motorA('R');
   do { // make sure we are clear of the last bump
+    motorDelay('R', 1, 4);
     val=digitalRead(BUMPER_BOTTOM);
   } while(val);
   do { // move until bottom button clicks
+    motorDelay('R', 1, 4);
     val=digitalRead(BUMPER_BOTTOM);
   } while(!val);
-  motorA('O');
-  delay(100);
   Serial.println("ok");
 }
 
 void returnToHome() {
   int val=1;
-  motorA('L');
   do {
+    motorDelay('L', 1, 4);
     val=digitalRead(BUMPER_FRONT);
   } while(val);
-  motorA('R');
-  delay(10);
+  motorDelay('R', 10, 0);
   do {
-    motorA('L');
-    delay(10);
-    motorA('O');
-    delay(80);
+    motorDelay('L', 1, 8);
   } while(digitalRead(BUMPER_FRONT));
 }
 
@@ -148,14 +150,16 @@ void emptySyringe() {
   stepperOff();
 }
 
-void motorA(char d) {
+void motor(char d) {
   if(d =='R'){
     digitalWrite(A1A,LOW);
     digitalWrite(A1B,HIGH); 
-  }else if (d =='L'){
+  }
+  else if (d =='L'){
     digitalWrite(A1A,HIGH);
     digitalWrite(A1B,LOW);    
-  }else{
+  }
+  else{
     //Robojax.com L9110 Motor Tutorial
     // Turn motor OFF
     digitalWrite(A1A,LOW);
