@@ -41,19 +41,14 @@ void setup() {
 
 void loop() {
   switch (state) {
-    case 0: // return to home
-      Serial.println(state);
+    case 0: // return to home and refill syringe
       returnToHome();
-      state=1;
-    break;
-    case 1: // empty the syringe
-      Serial.println(state);
       emptySyringe();
-      state=2;
-    break;
-    case 2: // fill the syringe
-      Serial.println(state);
       syringe(6);
+      state=3; // wait for command
+    break;
+    case 1: // return to home
+      returnToHome();
       state=3;
     break;
     case 3: // waiting for command
@@ -64,6 +59,7 @@ void loop() {
 
 void syringe(float ml) {
   myStepper.step(stepsPerML * ml);
+  waterML+=ml;
   stepperOff();  
 }
 
@@ -75,6 +71,11 @@ void readCommand() {
     String ml=getValue(input, ' ', 2);
     Serial.println(cmd+", "+pot+", "+ml);
     if (cmd.equals("water")) {
+      float fml=ml.toFloat();
+      if (fml>waterML) { // not enough water - refill
+        emptySyringe();
+        syringe(6);
+      }
       waterPot(pot.toInt(), ml.toFloat());
     }
     else {
@@ -84,8 +85,6 @@ void readCommand() {
 }
 
 void motorDelay(char dir, int msOn, int msOff) {
-  msOn=20;
-  msOff=20;
   motor(dir);
   delay(msOn);
   motor('O');
@@ -93,36 +92,52 @@ void motorDelay(char dir, int msOn, int msOff) {
 }
 
 void waterPot(int pot, float ml) {
+  int msOn=10;
+  int msOff=10;
   for (int i=0;i<pot;++i) {
-    moveToNextPot();
+    if (i) { // control speed after first marker
+      msOn=10;
+      msOff=20;
+      if (pot-i==1) {
+        msOff=40;
+      }
+      if (pot-i==2) {
+        msOff=30;
+      }
+    }
+    moveToNextPot(msOn, msOff);
   }
-  motorDelay('L', 100, 0);
   syringe(ml*-1);
-  state=0; // go back to base
+  state=1; // go back to base for more instruction
 }
 
-void moveToNextPot() {
+void moveToNextPot(int msOn, int msOff) {
   int val=1;  
   do { // make sure we are clear of the last bump
-    motorDelay('R', 1, 4);
+    motorDelay('R', msOn, msOff);
     val=digitalRead(BUMPER_BOTTOM);
   } while(val);
   do { // move until bottom button clicks
-    motorDelay('R', 1, 4);
+    motorDelay('R', msOn, msOff);
     val=digitalRead(BUMPER_BOTTOM);
   } while(!val);
-  Serial.println("ok");
 }
 
 void returnToHome() {
   int val=1;
-  do {
-    motorDelay('L', 1, 4);
+  if (!digitalRead(BUMPER_FRONT)) { // already home
+    return;
+  }
+  do { // move to base at half speed
+    motorDelay('L', 20, 20);
     val=digitalRead(BUMPER_FRONT);
   } while(val);
-  motorDelay('R', 10, 0);
-  do {
-    motorDelay('L', 1, 8);
+  delay(100);
+  do { // try this a few times until it sticks
+   do { // move to base again but at slower speed
+     motorDelay('L', 20, 40);
+   } while(digitalRead(BUMPER_FRONT));
+   delay(1000);
   } while(digitalRead(BUMPER_FRONT));
 }
 
