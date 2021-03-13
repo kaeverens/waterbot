@@ -7,4 +7,4 @@ power usage estimate is 240mA for the 28BYJ-48 motor, and 10mA for the Arduino.
 * when the motor is enabled: 1.25W
 * when the motor is disabled: 0.05W
 
-the 28BYJ-48 motor has 2038 steps per revolution. the gear reduction from the motor to the syringe-pushing rack is 14/8=1.75, and has teeth that are 3.142mm apart, so one step of the motor drives it 0.00088mm, or 0.001mm rounded.
+the 28BYJ-48 motor has 2038 steps per revolution. the gear reduction from the motor to the syringe-pushing rack is 1/11 * 14/8, and has teeth that are 3.142mm apart, so one step of the motor drives it 0.00969mm, or 0.01mm rounded.
