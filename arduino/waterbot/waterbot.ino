@@ -126,6 +126,7 @@ void moveToNextPot(int msOn, int msOff) {
 void returnToHome() {
   int val=1;
   if (!digitalRead(BUMPER_FRONT)) { // already home
+    Serial.println("setState: 1");
     return;
   }
   do { // move to base at half speed
@@ -139,6 +140,7 @@ void returnToHome() {
    } while(digitalRead(BUMPER_FRONT));
    delay(1000);
   } while(digitalRead(BUMPER_FRONT));
+  Serial.println("setState: 1");
 }
 
 String getValue(String data, char separator, int index) {
