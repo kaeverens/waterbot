@@ -43,12 +43,15 @@ void loop() {
   switch (state) {
     case 0: // return to home and refill syringe
       returnToHome();
+      Serial.println("setState: 2"); // refilling syringe
       emptySyringe();
       syringe(6);
+      Serial.println("setState: 3");
       state=3; // wait for command
     break;
     case 1: // return to home
       returnToHome();
+      Serial.println("setState: 3");
       state=3;
     break;
     case 3: // waiting for command
