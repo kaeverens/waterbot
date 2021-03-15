@@ -1,6 +1,12 @@
 // { constants
 const BOTSTATE_UNKNOWN=0;
+const { parse } = require('querystring');
+const sqlite3 = require('sqlite3');
+const http = require("http");
+const fs = require('fs').promises;
+const port = 3000;
 // }
+global.updates=[];
 // { functions
 function addUpdate(cmd, data) {
 	var now=+(new Date);
@@ -23,16 +29,26 @@ var bot={
 	}
 }
 // }
+// { database
+function getDatabase(callback) {
+	let db=new sqlite3.Database(__dirname+'/data.db', err=>{
+		if (err) {
+			return console.error('error opening sqlite database', err.message);
+		}
+		db.run('create table if not exists plants(id integer primary key autoincrement, position integer, ml_per_day float, last_watered integer)', ()=>{
+			callback(db);
+		});
+	});
+}
+// }
 // { define web server
-const http = require("http");
-const fs = require('fs').promises;
-const port = 3000;
-global.updates=[];
 var files={ // list of valid files
 	'/404.html':0,
-	'/index.html':0,
-	'/botStateGet.json':0,
 	'/bot.js':0,
+	'/botStateGet.json':0,
+	'/index.html':0,
+	'/plantAdd.json':0,
+	'/plantsGetDT.json':0,
 	'/updatesGet.json':0,
 };
 const requestListener=function(req, res) {
@@ -46,7 +62,22 @@ const requestListener=function(req, res) {
 		res.writeHead(200);
 		if (ext==='json') { // application files - run them
 			let fnName=req.url.replace(/^\/(.*)\..*/, '$1');
-			res.end(JSON.stringify(global[fnName]()));
+			if (req.method==='POST') {
+				let body = '';
+				req.on('data', chunk => {
+					body += chunk.toString(); // convert Buffer to string
+				});
+				req.on('end', () => {
+					global[fnName](ret=>{
+						res.end(JSON.stringify(ret));
+					}, parse(body));
+				});
+			}
+			else {
+				global[fnName](ret=>{
+					res.end(JSON.stringify(ret));
+				});
+			}
 		}
 		else {
 			res.end(files[req.url]);

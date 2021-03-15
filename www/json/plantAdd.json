@@ -1,0 +1,13 @@
+(callback, post)=>{
+	getDatabase(db=>{
+		var params=[
+			+post.position, +post.ml_per_day, (+(new Date))/1000-86400
+		];
+		db.run('insert into plants (position, ml_per_day, last_watered) values(?, ?, ?)', params, (err, r)=>{
+			db.close();
+			callback({
+				ok:1
+			});
+		});
+	});
+}

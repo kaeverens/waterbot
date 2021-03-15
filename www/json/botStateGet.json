@@ -1,5 +1,5 @@
-()=>{
-	return {
+callback=>{
+	callback({
 		state:bot.state
-	};
+	});
 }

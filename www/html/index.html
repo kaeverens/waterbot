@@ -2,12 +2,25 @@
 <html>
 	<head>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+		<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 		<script src="bot.js"></script>
+		<style>
+			@import "https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css";
+			@import "https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css";
+		</style>
 	</head>
 	<body>
 		<h1>waterbot</h1>
 		<table>
 			<tr><th>Bot state</th><td id="bot-state"></td></tr>
 		</table>
+		<table id="plants">
+			<thead>
+				<tr><th>ID</th><th>Position</th><th>ML/Day</th><th>Last Watered</th></tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+		<button id="plant-add">add plant</button>
 	</body>
 </html>
