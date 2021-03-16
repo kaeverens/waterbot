@@ -5,6 +5,8 @@ const sqlite3 = require('sqlite3');
 const http = require("http");
 const fs = require('fs').promises;
 const port = 3000;
+const SerialPort=require('serialport');
+const Readline=require('@serialport/parser-readline');
 // }
 global.updates=[];
 // { functions
@@ -25,6 +27,7 @@ var bot={
 	state:BOTSTATE_UNKNOWN, // state of the bot. default to "unknown"
 	setState:num=>{
 		bot.state=num;
+		console.log(bot.state);
 		addUpdate('botSetState', num);
 	}
 }
@@ -121,8 +124,6 @@ const server = http.createServer(requestListener);
 server.listen(port);
 // }
 // { serial communication
-const SerialPort=require('serialport');
-const Readline=require('@serialport/parser-readline');
 const sp=new SerialPort('/dev/ttyUSB0', { baudRate: 9600 });
 const parser = sp.pipe(new Readline({ delimiter: '\n' }));
 sp.on("open", () => {
@@ -130,6 +131,7 @@ sp.on("open", () => {
 });
 parser.on('data', str =>{
 	str=str.trim();
+	console.log(str);
 	var cmd=str.replace(/:.*/, ''), data=str.replace(/^[^:]*: /, '');
 	switch (cmd) {
 		case 'setState':
@@ -139,4 +141,8 @@ parser.on('data', str =>{
 			console.log('unknown serial command', str);
 	}
 });
+global.serialPing=setInterval(()=>{
+	sp.write('ping\n');
+	console.log('> ping');
+}, 4000);
 // }

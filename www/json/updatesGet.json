@@ -1,8 +1,16 @@
-callback=>{
+(callback, post)=>{
 	var now=+(new Date);
 	function check() {
-		if (global.updates.length || now<((new Date)-29000)) {
-			return callback(global.updates);
+		var updates=[], lastUpdate=+post.lastUpdate;
+		if (global.updates.length) {
+			global.updates.forEach(u=>{
+				if (u.datetime>=lastUpdate) {
+					updates.push(u);
+				}
+			});
+		}
+		if (updates.length || now<((new Date)-29000)) {
+			return callback(updates);
 		}
 		setTimeout(check, 100);
 	}

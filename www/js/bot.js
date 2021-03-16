@@ -8,7 +8,9 @@ $(()=>{
 	};
 	var lastUpdate=0;
 	function getUpdates() {
-		$.post('/updatesGet.json', us=>{
+		$.post('/updatesGet.json', {
+			lastUpdate:lastUpdate
+		}, us=>{
 			us.forEach(u=>{
 				if (u.datetime>=lastUpdate) {
 					switch (u.cmd) {
