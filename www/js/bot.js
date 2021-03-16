@@ -69,6 +69,27 @@ $(()=>{
 			});
 		console.log(data);
 	});
+	$potsTableDOM.on('click', 'td.ml_per_day', function() {
+		var $td=$(this), $tr=$td.closest('tr'), data=$tr.data('data'), id=data[0], ml_per_day=data[2];
+		if ($td.data('clicked')) {
+			return;
+		}
+		$td.data('clicked', true);
+		var $inp=$('<input type="number"/>')
+			.val(ml_per_day)
+			.appendTo($td.empty())
+			.change(()=>{
+				ml_per_day=+$inp.val();
+				$.post('/potMlPerDaySet.json', {
+					id:id,
+					ml_per_day:ml_per_day,
+				}, r=>{
+					data[2]=ml_per_day;
+					$td.data('clicked', false).data('data', data).text(ml_per_day);
+				});
+			});
+		console.log(data);
+	});
 	// }
 	$('#pot-add').click(()=>{ // button: add pot
 		var $dialog=$('<div><table>'
