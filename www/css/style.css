@@ -1,0 +1,22 @@
+html,body{
+	background:#333;
+	color:#fff;
+}
+td.editable:hover{
+	cursor:pointer;
+	box-shadow:0 0 10px #000 inset;
+}
+td.editable{
+	color:#69f;
+	text-decoration:underline;
+}
+*{color:#eee;}
+table.dataTable tbody tr{background:#555}
+table.dataTable tbody tr td{border-bottom:1px solid #000}
+table.dataTable tbody tr.even{background:#444}
+button,input{
+	background:#000;
+}
+button{
+	border-radius:6px
+}

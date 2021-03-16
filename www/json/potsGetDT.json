@@ -1,6 +1,6 @@
 (callback, post)=>{
 	getDatabase(db=>{
-		db.all('select * from plants', (err, rs)=>{
+		db.all('select * from pots', (err, rs)=>{
 			db.close();
 			if (!rs) {
 				rs=[];

@@ -28,26 +28,57 @@ $(()=>{
 		});
 	}
 	getUpdates();
-	// { show table of plants
-	let $plantsTableDOM=$('#plants');
-	let $plantsTable=$plantsTableDOM.DataTable({
+	// { show table of pots
+	let $potsTableDOM=$('#pots');
+	let $potsTable=$potsTableDOM.DataTable({
 		processing:true,
+		columns:[
+			{className:'id'},
+			{className:'position editable'},
+			{className:'ml_per_day editable'},
+			{className:'last_watered'},
+		],
 		serverSide:true,
 		ajax:{
-			url:'/plantsGetDT.json',
+			url:'/potsGetDT.json',
 			type:'POST',
+		},
+		rowCallback:(r, data)=>{
+			$(r).data('data', data);
+			$('.last_watered', r).text(data[3]?new Date(data[3]*1000):' - ');
+		},
+	});
+	$potsTableDOM.on('click', 'td.position', function() {
+		var $td=$(this), $tr=$td.closest('tr'), data=$tr.data('data'), id=data[0], position=data[1];
+		if ($td.data('clicked')) {
+			return;
 		}
+		$td.data('clicked', true);
+		var $inp=$('<input type="number"/>')
+			.val(position)
+			.appendTo($td.empty())
+			.change(()=>{
+				position=+$inp.val();
+				$.post('/potPositionSet.json', {
+					id:id,
+					position:position
+				}, r=>{
+					data[1]=position;
+					$td.data('clicked', false).data('data', data).text(position);
+				});
+			});
+		console.log(data);
 	});
 	// }
-	// { button: add plant
-	$('#plant-add').click(()=>{
+	$('#pot-add').click(()=>{ // button: add pot
 		var $dialog=$('<div><table>'
 			+'<tr><th>Position</th><td><input id="dialog-position" type="number"/></td></tr>'
 			+'<tr><th>ML/Day</th><td><input id="dialog-ml_day" type="number" step="0.1"/></td></tr>'
 			+'</table></div>')
 			.dialog({
 				modal:true,
-				title:'add a plant',
+				width:350,
+				title:'add a pot',
 				close:()=>{
 					$dialog.remove();
 				},
@@ -57,8 +88,8 @@ $(()=>{
 							position:$('#dialog-position').val(),
 							ml_per_day:$('#dialog-ml_day').val()
 						};
-						$.post('/plantAdd.json', params, r=>{
-							$plantsTable.draw(false);
+						$.post('/potAdd.json', params, r=>{
+							$potsTable.draw(false);
 							$dialog.remove();
 						});
 					}

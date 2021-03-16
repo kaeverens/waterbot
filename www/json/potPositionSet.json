@@ -1,0 +1,13 @@
+(callback, post)=>{
+	getDatabase(db=>{
+		var params=[
+			+post.position, +post.id
+		];
+		db.run('update pots set position=? where id=?', params, (err, r)=>{
+			db.close();
+			callback({
+				ok:1
+			});
+		});
+	});
+}

@@ -38,22 +38,14 @@ function getDatabase(callback) {
 		if (err) {
 			return console.error('error opening sqlite database', err.message);
 		}
-		db.run('create table if not exists plants(id integer primary key autoincrement, position integer, ml_per_day float, last_watered integer)', ()=>{
+		db.run('create table if not exists pots(id integer primary key autoincrement, position integer, ml_per_day float, last_watered integer)', ()=>{
 			callback(db);
 		});
 	});
 }
 // }
 // { define web server
-var files={ // list of valid files
-	'/404.html':0,
-	'/bot.js':0,
-	'/botStateGet.json':0,
-	'/index.html':0,
-	'/plantAdd.json':0,
-	'/plantsGetDT.json':0,
-	'/updatesGet.json':0,
-};
+var files={ };
 const requestListener=function(req, res) {
 	function pushFile() {
 		res.setHeader('Content-Type', {
@@ -61,6 +53,7 @@ const requestListener=function(req, res) {
 			'css':'text/css',
 			'json':'application/json',
 			'js':'text/javascript',
+			'ico':'image/x-icon',
 		}[ext]);
 		res.writeHead(200);
 		if (ext==='json') { // application files - run them
@@ -89,14 +82,12 @@ const requestListener=function(req, res) {
 	if (req.url==='/') {
 		req.url='/index.html';
 	}
-	if (files[req.url]===undefined) {
-		req.url='/404.html';
-	}
 	let ext=req.url.replace(/.*\./, '');
 	if (files[req.url]) {
 		pushFile();
 	}
 	else {
+		console.log(__dirname+'/'+ext+req.url);
 		fs.readFile(__dirname+'/'+ext+req.url)
 			.then(contents=>{
 				contents=contents.toString();
