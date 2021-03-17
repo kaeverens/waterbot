@@ -83,11 +83,10 @@ const requestListener=function(req, res) {
 		req.url='/index.html';
 	}
 	let ext=req.url.replace(/.*\./, '');
-	if (files[req.url]) {
+	if (0 && files[req.url]) { // put "0&&" in condition to disable caching
 		pushFile();
 	}
 	else {
-		console.log(__dirname+'/'+ext+req.url);
 		fs.readFile(__dirname+'/'+ext+req.url)
 			.then(contents=>{
 				contents=contents.toString();

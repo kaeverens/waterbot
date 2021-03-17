@@ -11,7 +11,8 @@
 						v.id,
 						v.position,
 						v.ml_per_day,
-						v.last_watered
+						v.last_watered,
+						''
 					];
 				});
 			}

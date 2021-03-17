@@ -37,6 +37,7 @@ $(()=>{
 			{className:'position editable'},
 			{className:'ml_per_day editable'},
 			{className:'last_watered'},
+			{className:'delete'},
 		],
 		serverSide:true,
 		ajax:{
@@ -46,50 +47,63 @@ $(()=>{
 		rowCallback:(r, data)=>{
 			$(r).data('data', data);
 			$('.last_watered', r).text(data[3]?new Date(data[3]*1000):' - ');
+			$('td.delete', r).empty().append('<a href="#" class="delete">[x]</a>');
 		},
 	});
-	$potsTableDOM.on('click', 'td.position', function() {
-		var $td=$(this), $tr=$td.closest('tr'), data=$tr.data('data'), id=data[0], position=data[1];
-		if ($td.data('clicked')) {
-			return;
-		}
-		$td.data('clicked', true);
-		var $inp=$('<input type="number"/>')
-			.val(position)
-			.appendTo($td.empty())
-			.change(()=>{
-				position=+$inp.val();
-				$.post('/potPositionSet.json', {
-					id:id,
-					position:position
-				}, r=>{
-					data[1]=position;
-					$td.data('clicked', false).data('data', data).text(position);
-				});
+	$potsTableDOM
+		.on('click', 'td.position', function() {
+			var $td=$(this), $tr=$td.closest('tr'), data=$tr.data('data'), id=data[0], position=data[1];
+			if ($td.data('clicked')) {
+				return;
+			}
+			$td.data('clicked', true);
+			var $inp=$('<input type="number"/>')
+				.val(position)
+				.appendTo($td.empty())
+				.change(()=>{
+					position=+$inp.val();
+					$.post('/potPositionSet.json', {
+						id:id,
+						position:position
+					}, r=>{
+						data[1]=position;
+						$td.data('clicked', false).data('data', data).text(position);
+					});
+				})
+				.focus();
+		})
+		.on('click', 'td.ml_per_day', function() {
+			var $td=$(this), $tr=$td.closest('tr'), data=$tr.data('data'), id=data[0], ml_per_day=data[2];
+			if ($td.data('clicked')) {
+				return;
+			}
+			$td.data('clicked', true);
+			var $inp=$('<input type="number"/>')
+				.val(ml_per_day)
+				.appendTo($td.empty())
+				.change(()=>{
+					ml_per_day=+$inp.val();
+					$.post('/potMlPerDaySet.json', {
+						id:id,
+						ml_per_day:ml_per_day,
+					}, r=>{
+						data[2]=ml_per_day;
+						$td.data('clicked', false).data('data', data).text(ml_per_day);
+					});
+				})
+				.focus();
+		})
+		.on('click', 'a.delete', function() {
+			var $tr=$(this).closest('tr'), data=$tr.data('data'), id=data[0];
+			if (!confirm('are you sure you want to delete this?')) {
+				return;
+			}
+			$.post('/potDelete.json', {
+				id:id
+			}, r=>{
+				$potsTable.draw();
 			});
-		console.log(data);
-	});
-	$potsTableDOM.on('click', 'td.ml_per_day', function() {
-		var $td=$(this), $tr=$td.closest('tr'), data=$tr.data('data'), id=data[0], ml_per_day=data[2];
-		if ($td.data('clicked')) {
-			return;
-		}
-		$td.data('clicked', true);
-		var $inp=$('<input type="number"/>')
-			.val(ml_per_day)
-			.appendTo($td.empty())
-			.change(()=>{
-				ml_per_day=+$inp.val();
-				$.post('/potMlPerDaySet.json', {
-					id:id,
-					ml_per_day:ml_per_day,
-				}, r=>{
-					data[2]=ml_per_day;
-					$td.data('clicked', false).data('data', data).text(ml_per_day);
-				});
-			});
-		console.log(data);
-	});
+		});
 	// }
 	$('#pot-add').click(()=>{ // button: add pot
 		var $dialog=$('<div><table>'

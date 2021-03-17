@@ -1,0 +1,13 @@
+(callback, post)=>{
+	getDatabase(db=>{
+		var params=[
+			+post.id
+		];
+		db.run('delete from pots where id=?', params, (err, r)=>{
+			db.close();
+			callback({
+				ok:1
+			});
+		});
+	});
+}

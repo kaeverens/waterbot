@@ -1,0 +1,13 @@
+(callback, post)=>{
+	getDatabase(db=>{
+		var params=[
+			+post.ml_per_day, +post.id
+		];
+		db.run('update pots set ml_per_day=? where id=?', params, (err, r)=>{
+			db.close();
+			callback({
+				ok:1
+			});
+		});
+	});
+}
