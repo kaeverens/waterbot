@@ -1,0 +1,27 @@
+(callback, post)=>{
+	getDatabase(db=>{
+		db.all('select * from pots', (err, rs)=>{
+			db.close();
+			if (!rs) {
+				rs=[];
+			}
+			else {
+				rs.forEach((v, k)=>{
+					rs[k]=[
+						v.id,
+						v.position,
+						v.ml_per_day,
+						v.last_watered,
+						''
+					];
+				});
+			}
+			callback({
+				data:rs,
+				draw:post.draw,
+				recordsFiltered:rs.length,
+				recordsTotal:rs.length,
+			});
+		});
+	});
+}

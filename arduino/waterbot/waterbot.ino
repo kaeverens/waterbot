@@ -11,6 +11,7 @@ const int BUMPER_BOTTOM = 5;
 // }
 int state=0; // return to home
 float waterML=0;
+unsigned long lastSerialReceived=0;
 
 const int INPUT_SIZE=30; // max expected input size
 
@@ -34,8 +35,6 @@ void setup() {
   pinMode(BUMPER_FRONT, INPUT_PULLUP);
   pinMode(BUMPER_BACK, INPUT_PULLUP);
   pinMode(BUMPER_BOTTOM, INPUT_PULLUP);
-  
-  Serial.println("booted");
   stepperOff();
 }
 
@@ -43,16 +42,29 @@ void loop() {
   switch (state) {
     case 0: // return to home and refill syringe
       returnToHome();
+      Serial.println("setState: 2"); // refilling syringe
       emptySyringe();
       syringe(6);
+      Serial.println("setState: 3");
+      lastSerialReceived=millis();
       state=3; // wait for command
     break;
     case 1: // return to home
       returnToHome();
+      lastSerialReceived=millis();
+      Serial.println("setState: 3");
       state=3;
     break;
     case 3: // waiting for command
-      readCommand();
+      if (lastSerialReceived+20000<millis()) { // haven't heard from port in 5s. try to reconnect
+          motor('R');
+          delay(500);
+          motor('O');
+          state=1; // return to home
+      }
+      else {
+        readCommand();
+      }
     break;
   }
 }
@@ -65,11 +77,11 @@ void syringe(float ml) {
 
 void readCommand() {
   if (Serial.available() > 0) {
+    lastSerialReceived=millis();
     String input=Serial.readString();
     String cmd=getValue(input, ' ', 0);
     String pot=getValue(input, ' ', 1);
     String ml=getValue(input, ' ', 2);
-    Serial.println(cmd+", "+pot+", "+ml);
     if (cmd.equals("water")) {
       float fml=ml.toFloat();
       if (fml>waterML) { // not enough water - refill
@@ -77,6 +89,9 @@ void readCommand() {
         syringe(6);
       }
       waterPot(pot.toInt(), ml.toFloat());
+    }
+    else if (input.equals("ping\n")) {
+      Serial.println("pong");
     }
     else {
       Serial.println("unknown command: "+input);
@@ -93,16 +108,16 @@ void motorDelay(char dir, int msOn, int msOff) {
 
 void waterPot(int pot, float ml) {
   int msOn=10;
-  int msOff=10;
+  int msOff=5;
   for (int i=0;i<pot;++i) {
     if (i) { // control speed after first marker
       msOn=10;
-      msOff=20;
+      msOff=10;
       if (pot-i==1) {
-        msOff=40;
+        msOff=30;
       }
       if (pot-i==2) {
-        msOff=30;
+        msOff=20;
       }
     }
     moveToNextPot(msOn, msOff);
@@ -126,6 +141,7 @@ void moveToNextPot(int msOn, int msOff) {
 void returnToHome() {
   int val=1;
   if (!digitalRead(BUMPER_FRONT)) { // already home
+    Serial.println("setState: 1");
     return;
   }
   do { // move to base at half speed
@@ -139,6 +155,7 @@ void returnToHome() {
    } while(digitalRead(BUMPER_FRONT));
    delay(1000);
   } while(digitalRead(BUMPER_FRONT));
+  Serial.println("setState: 1");
 }
 
 String getValue(String data, char separator, int index) {

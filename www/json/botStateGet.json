@@ -1,0 +1,5 @@
+callback=>{
+	callback({
+		state:bot.state
+	});
+}
